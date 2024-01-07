@@ -8,9 +8,11 @@ use axum::{
     Router,
 };
 use std::net::SocketAddr;
+use axum::routing::{get, put};
 use sqlx::migrate::{Migrator};
 use lib_api_common;
 use crate::handlers::projects::{create_new_project, get_all_projects};
+use crate::handlers::work_items::{complete_work_item, log_work_item, get_work_item_by_id, start_work_item};
 
 static MIGRATOR: Migrator = sqlx::migrate!(); // defaults to "./migrations"
 
@@ -31,7 +33,11 @@ async fn main() {
         .route(
             "/projects",
             post(create_new_project).get(get_all_projects)
-        )
+
+        )        .route("/projects/work-items/:id",get(get_work_item_by_id))
+        .route("/projects/work-items",post(log_work_item))
+        .route("/projects/work-items/:id/start", put(start_work_item))
+        .route("/projects/work-items/:id/complete", put(complete_work_item))
         .with_state(state);
 
     // run it with hyper

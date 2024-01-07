@@ -6,6 +6,8 @@ use crate::state::AppState;
 use axum::{
     response::{IntoResponse},
 };
+use axum::http::StatusCode;
+use lib_api_common::errors::ApiError;
 
 #[derive(Deserialize)]
 pub struct CreateProjectRequest {
@@ -24,7 +26,7 @@ pub struct Project {
 pub async fn create_new_project(
     State(app_state): State<AppState>,
     Json(request): Json<CreateProjectRequest>,
-) -> Response{
+) -> Result<Json<Project>, ApiError>{
     let response = sqlx::query_as!(Project,
         "insert into projects (title) values\
           ($1) returning id , title , is_complete, created_on, updated_on",
@@ -33,7 +35,7 @@ pub async fn create_new_project(
         .fetch_one(&app_state.database_pool)
         .await.unwrap();
     tracing::debug!("Created project with id {} successfully. " , response.id) ;
-    Json(response).into_response()
+    Ok(Json(response))
 }
 
 pub async fn get_all_projects(

@@ -6,5 +6,4 @@ fn get_routes() {
         .route("/user/list", get(list_users))
         .route("/user/create", post(create_user))
         .with_state(pool);
-
 }
